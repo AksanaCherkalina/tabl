@@ -60,6 +60,8 @@ def duplicates_combining():
             new_list.append(contact)
     return new_list
 
+new_contact = [y if x="" else x for x,y in zip(contact_1, contact_2)]
+
 
 if __name__ == '__main__':
     names_moving()
