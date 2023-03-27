@@ -1,5 +1,7 @@
 import re
 import csv
+import csv
+
 
 with open("phonebook_raw.csv", 'r', encoding='utf-8') as f:
     rows = csv.reader(f, delimiter=",")
@@ -59,8 +61,6 @@ def duplicates_combining():
         if contact not in new_list:
             new_list.append(contact)
     return new_list
-
-new_contact = [y if x="" else x for x,y in zip(contact_1, contact_2)]
 
 
 if __name__ == '__main__':
