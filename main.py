@@ -57,11 +57,19 @@ def duplicates_combining():
                 if column[6] == '':
                     column[6] = contact[6]
 
-    for contact in contacts_list:
-        if contact not in new_list:
-            new_list.append(contact)
-    return new_list
 
+from collections import defaultdict
+new_list = defaultdict(list)
+
+for info in phone_book:
+    key = tuple(info[:2])
+    for item in info:
+        if item not in new_list [key]:
+            new_list [key].append(item)
+
+result_list = list(new_list .values())
+	
+   
 
 if __name__ == '__main__':
     names_moving()
