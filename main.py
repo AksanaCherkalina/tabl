@@ -1,81 +1,57 @@
 import re
+from pprint import pprint
+# читаем адресную книгу в формате CSV в список contacts_list
 import csv
-import csv
+from typing import List
 
+with open("phonebook_raw.csv", encoding='UTF-8') as f:
+  rows = csv.reader(f, delimiter=",")
+  contacts_list = list(rows)
+  name_list = []
+  new_list = []
 
-with open("phonebook_raw.csv", 'r', encoding='utf-8') as f:
-    rows = csv.reader(f, delimiter=",")
-    contacts_list = list(rows)
-    new_list = []
+  for row in contacts_list:
+    joined_rows = ','.join(row[0:3])
+    name_list.append(joined_rows)
 
+  for joined_rows in name_list:
+    new_row = re.split(r'[, ]', joined_rows)
+    new_row = list(filter(None, new_row))
+    new_list.append(new_row)
+  new_list[-1].append('')
 
-def names_moving():
-    name_pattern = r'([А-Я])'
-    name_substitution = r' \1'
-    for column in contacts_list[1:]:
-        line = column[0] + column[1] + column[2]
-        if len((re.sub(name_pattern, name_substitution, line).split())) == 3:
-            column[0] = re.sub(name_pattern, name_substitution, line).split()[0]
-            column[1] = re.sub(name_pattern, name_substitution, line).split()[1]
-            column[2] = re.sub(name_pattern, name_substitution, line).split()[2]
-        elif len((re.sub(name_pattern, name_substitution, line).split())) == 2:
-            column[0] = re.sub(name_pattern, name_substitution, line).split()[0]
-            column[1] = re.sub(name_pattern, name_substitution, line).split()[1]
-            column[2] = ''
-        elif len((re.sub(name_pattern, name_substitution, line).split())) == 1:
-            column[0] = re.sub(name_pattern, name_substitution, line).split()[0]
-            column[1] = ''
-            column[2] = ''
-    return
+  for row in new_list:
+    i = new_list.index(row)
+    row.append(contacts_list[i][3])
+    row.append(contacts_list[i][4])
+    row.append(contacts_list[i][5])
+    row.append(contacts_list[i][6])
 
+  phone_pattern = re.compile(r'(\+7|8)\s*\(*(495)\)*\s*\-*(\d{3})[-\s*]?(\d{2})[-\s*]?(\d{2})(\s*)\(*(доб.)?\s*(\d{4})?\)*')
+  contacts_list2 = []
+  for line in new_list:
+    line_str = ','.join(line)
+    format_line = phone_pattern.sub(r'+7(\2)\3-\4-\5\6\7\8', line_str)
+    line_as_list = format_line.split(',')
+    contacts_list2.append(line_as_list)
 
-def phone_number_formatting():
-    phone_pattern = re.compile(
-        r'(\+7|8)?\s*\(?(\d{3})\)?\s*\D?(\d{3})[-\s+]?(\d{2})-?(\d{2})((\s)?\(?(доб.)?\s?(\d+)\)?)?')
-    phone_substitution = r'+7(\2)\3-\4-\5\7\8\9'
-    for column in contacts_list:
-        column[5] = phone_pattern.sub(phone_substitution, column[5])
-    return
+  contacts_list_updated = []
+  for i in new_list:
+    for j in new_list:
+      if i[0] == j[0] and i[1] == j[1] and i is not j:
+        if i[2] == '':
+          i[2] = j[2]
+        if i[3] == '':
+          i[3] = j[3]
+        if i[4] == '':
+          i[4] = j[4]
+        if i[5] == '':
+          i[5] = j[5]
+        if i[6] == '':
+          i[6] = j[6]
+    if i not in contacts_list_updated:
+      contacts_list_updated.append(i)
 
-
-def duplicates_combining():
-    for column in contacts_list[1:]:
-        first_name = column[0]
-        last_name = column[1]
-        for contact in contacts_list:
-            new_first_name = contact[0]
-            new_last_name = contact[1]
-            if first_name == new_first_name and last_name == new_last_name:
-                if column[2] == '':
-                    column[2] = contact[2]
-                if column[3] == '':
-                    column[3] = contact[3]
-                if column[4] == '':
-                    column[4] = contact[4]
-                if column[5] == '':
-                    column[5] = contact[5]
-                if column[6] == '':
-                    column[6] = contact[6]
-
-
-from collections import defaultdict
-new_list = defaultdict(list)
-
-for info in phone_book:
-    key = tuple(info[:2])
-    for item in info:
-        if item not in new_list [key]:
-            new_list [key].append(item)
-
-result_list = list(new_list .values())
-	
-   
-
-if __name__ == '__main__':
-    names_moving()
-    phone_number_formatting()
-    duplicates_combining()
-
-    with open("phonebook.csv", "w", encoding='utf-8') as f:
-        datawriter = csv.writer(f, delimiter=',')
-        datawriter.writerows(new_list)
+with open("phonebook.csv", "w") as f:
+  datawriter = csv.writer(f, delimiter=',')
+  datawriter.writerows(contacts_list_updated)
